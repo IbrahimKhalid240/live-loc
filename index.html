@@ -51,28 +51,30 @@
     }
 
     #topLeftModal {
-      position: fixed;
-      top: 20px;
-      left: 20px;
-      background-color: #cce5ff;
-      color: #004085;
-      border: 1px solid #b8daff;
-      padding: 12px 20px;
-      border-radius: 8px;
-      box-shadow: 0 2px 15px rgba(0, 0, 0, 0.15);
-      font-weight: 600;
-      font-size: 1rem;
-      opacity: 0;
-      transform: translateX(-150%);
-      transition: transform 0.5s ease, opacity 0.6s ease;
-      max-width: 320px;
-      z-index: 1100;
-      user-select: none;
-    }
-    #topLeftModal.show {
-      opacity: 1;
-      transform: translateX(0);
-    }
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translate(-50%, 150%);
+  background-color: #cce5ff;
+  color: #004085;
+  border: 1px solid #b8daff;
+  padding: 12px 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 15px rgba(0, 0, 0, 0.15);
+  font-weight: 600;
+  font-size: 1rem;
+  opacity: 0;
+  transition: transform 0.6s ease, opacity 0.6s ease;
+  max-width: 320px;
+  z-index: 1100;
+  user-select: none;
+}
+
+#topLeftModal.show {
+  opacity: 1;
+  transform: translate(-50%, 0%);
+}
+
 
     #badgeMark {
       position: fixed;
@@ -244,7 +246,7 @@
         modal.classList.add('show');
         setTimeout(() => {
           modal.classList.remove('show');
-        }, 15000);
+        }, 5000);
       }, 500);
     });
 
