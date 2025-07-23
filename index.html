@@ -51,30 +51,29 @@
     }
 
     #topLeftModal {
-  position: fixed;
-  bottom: 20px;
-  left: 50%;
-  transform: translate(-50%, 150%);
-  background-color: #cce5ff;
-  color: #004085;
-  border: 1px solid #b8daff;
-  padding: 12px 20px;
-  border-radius: 8px;
-  box-shadow: 0 2px 15px rgba(0, 0, 0, 0.15);
-  font-weight: 600;
-  font-size: 1rem;
-  opacity: 0;
-  transition: transform 0.6s ease, opacity 0.6s ease;
-  max-width: 320px;
-  z-index: 1100;
-  user-select: none;
-}
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translate(-50%, 150%);
+      background-color: #cce5ff;
+      color: #004085;
+      border: 1px solid #b8daff;
+      padding: 12px 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 15px rgba(0, 0, 0, 0.15);
+      font-weight: 600;
+      font-size: 1rem;
+      opacity: 0;
+      transition: transform 0.6s ease, opacity 0.6s ease;
+      max-width: 320px;
+      z-index: 1100;
+      user-select: none;
+    }
 
-#topLeftModal.show {
-  opacity: 1;
-  transform: translate(-50%, 0%);
-}
-
+    #topLeftModal.show {
+      opacity: 1;
+      transform: translate(-50%, 0%);
+    }
 
     #badgeMark {
       position: fixed;
@@ -97,7 +96,33 @@
       color: #fff;
     }
 
-    /* Custom Button from Uiverse.io */
+    .connection-status {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 15px;
+      border-radius: 50px;
+      background: #fff;
+      color: #000;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.2);
+      font-weight: 500;
+      font-size: 0.9rem;
+      z-index: 1100;
+    }
+
+    .status-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+    }
+
+    .status-strong { background: green; }
+    .status-good { background: orange; }
+    .status-fair { background: red; }
+
     .button {
       display: inline-flex;
       align-items: center;
@@ -138,12 +163,7 @@
     }
 
     .hoverEffect div {
-      background: linear-gradient(
-        90deg,
-        rgba(222, 0, 75, 1) 0%,
-        rgba(191, 70, 255, 1) 49%,
-        rgba(0, 212, 255, 1) 100%
-      );
+      background: linear-gradient(90deg, rgba(222, 0, 75, 1) 0%, rgba(191, 70, 255, 1) 49%, rgba(0, 212, 255, 1) 100%);
       border-radius: 40rem;
       width: 10rem;
       height: 10rem;
@@ -186,24 +206,19 @@
 </head>
 <body class="d-flex justify-content-center align-items-center vh-100">
 
-  <!-- Theme Toggle -->
   <div class="theme-toggle">
     <i id="sunIcon" class="fas fa-sun" title="Light Mode"></i>
     <i id="moonIcon" class="fas fa-moon" title="Dark Mode"></i>
   </div>
 
-  <!-- Toast -->
   <div id="refreshNotification" class="position-fixed top-0 start-50 translate-middle-x mt-3 px-4 py-2 bg-success text-white rounded shadow">
     Page is refreshed
   </div>
 
-  <!-- Modal -->
   <div id="topLeftModal">New UI Available Check out now!</div>
 
-  <!-- Badge -->
   <div id="badgeMark">#1 Location Tracker App</div>
 
-  <!-- Main Content -->
   <div id="main-content" class="text-center">
     <h3>Live-Loc Checker</h3>
     <button class="button mt-4" onclick="startLocation()">
@@ -212,23 +227,27 @@
     </button>
   </div>
 
-  <!-- JS -->
+  <div class="connection-status" id="connectionStatus">
+    <div id="statusDot" class="status-dot"></div>
+    <span id="statusText">Checking Connection...</span>
+  </div>
+
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
   <script>
     let originalHTML;
     let isDarkMode = false;
 
-    // Auto-detect light/dark mode based on time (after 6PM = dark)
     window.addEventListener('DOMContentLoaded', () => {
       const hour = new Date().getHours();
       if (hour >= 18 || hour < 6) {
         document.body.classList.add('dark-mode');
         isDarkMode = true;
       }
+      checkConnectionSpeed();
+      setInterval(checkConnectionSpeed, 30000);
     });
 
-    // Manual theme toggle
     document.getElementById('moonIcon').addEventListener('click', () => {
       document.body.classList.add('dark-mode');
       isDarkMode = true;
@@ -239,7 +258,6 @@
       isDarkMode = false;
     });
 
-    // Slide modal show
     window.addEventListener('load', () => {
       const modal = document.getElementById('topLeftModal');
       setTimeout(() => {
@@ -251,16 +269,17 @@
     });
 
     function startLocation() {
-  document.getElementById('badgeMark').style.display = 'none'; // hide the badge
-  originalHTML = document.getElementById('main-content').innerHTML;
-  document.getElementById('main-content').innerHTML = `
-    <div class="fetching-text">
-      <span class="spinner-border spinner-border-sm me-2"></span>
-      Fetching your Location...
-    </div>
-  `;
-  setTimeout(showMap, 3000);
-}
+      document.getElementById('badgeMark').style.display = 'none';
+      originalHTML = document.getElementById('main-content').innerHTML;
+      document.getElementById('main-content').innerHTML = `
+        <div class="fetching-text">
+          <span class="spinner-border spinner-border-sm me-2"></span>
+          Fetching your Location...
+        </div>
+      `;
+      setTimeout(showMap, 3000);
+    }
+
     async function showMap() {
       navigator.geolocation.getCurrentPosition(async (position) => {
         const lat = position.coords.latitude;
@@ -312,9 +331,40 @@
     }
 
     function goBack() {
-  document.getElementById('main-content').innerHTML = originalHTML;
-  document.getElementById('badgeMark').style.display = 'block'; // show the badge again
-}
+      document.getElementById('main-content').innerHTML = originalHTML;
+      document.getElementById('badgeMark').style.display = 'block';
+    }
+
+    function checkConnectionSpeed() {
+      const img = new Image();
+      const startTime = new Date().getTime();
+      const cacheBuster = Math.floor(Math.random() * 10000);
+      img.src = "https://www.google.com/images/phd/px.gif?" + cacheBuster;
+      img.onload = () => {
+        const endTime = new Date().getTime();
+        const duration = (endTime - startTime) / 1000;
+        const speedMbps = (0.01 * 8) / duration; // 10KB image in Megabits
+
+        const dot = document.getElementById('statusDot');
+        const text = document.getElementById('statusText');
+
+        if (speedMbps > 10) {
+          dot.className = 'status-dot status-strong';
+          text.textContent = 'Connection is Strong';
+        } else if (speedMbps > 3) {
+          dot.className = 'status-dot status-good';
+          text.textContent = 'Connection is Good';
+        } else {
+          dot.className = 'status-dot status-fair';
+          text.textContent = 'Connection is Fair';
+        }
+      };
+
+      img.onerror = () => {
+        document.getElementById('statusDot').className = 'status-dot status-fair';
+        document.getElementById('statusText').textContent = 'Connection Issue';
+      };
+    }
   </script>
 </body>
 </html>
