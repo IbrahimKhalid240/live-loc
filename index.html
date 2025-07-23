@@ -50,11 +50,12 @@
       display: none;
     }
 
+    /* ✅ Updated Modal Location: top-left corner */
     #topLeftModal {
       position: fixed;
-      bottom: 20px;
-      left: 50%;
-      transform: translate(-50%, 150%);
+      top: 20px;
+      left: 20px;
+      transform: translateY(-150%);
       background-color: #cce5ff;
       color: #004085;
       border: 1px solid #b8daff;
@@ -72,10 +73,12 @@
 
     #topLeftModal.show {
       opacity: 1;
-      transform: translate(-50%, 0%);
+      transform: translateY(0);
     }
 
+    /* ✅ Hidden by default */
     #badgeMark {
+      display: none;
       position: fixed;
       top: 20px;
       left: 50%;
@@ -281,90 +284,92 @@
     }
 
     async function showMap() {
-      navigator.geolocation.getCurrentPosition(async (position) => {
-        const lat = position.coords.latitude;
-        const lon = position.coords.longitude;
+  navigator.geolocation.getCurrentPosition(async (position) => {
+    const lat = position.coords.latitude;
+    const lon = position.coords.longitude;
 
-        let locationText = "Loading...";
-        try {
-          const response = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json`);
-          const data = await response.json();
-          locationText = data.display_name || "Location not found";
-        } catch (e) {
-          locationText = "Unable to fetch location name";
-        }
+    let locationText = "Loading...";
+    try {
+      const response = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json`);
+      const data = await response.json();
+      locationText = data.display_name || "Location not found";
+    } catch (e) {
+      locationText = "Unable to fetch location name";
+    }
 
-        document.getElementById('main-content').innerHTML = `
-          <h5>Here you are:-</h5>
-          <div id="map"></div>
-          <p class="mt-2"><strong>${locationText}</strong></p>
-          <div class="d-flex justify-content-center gap-3 mt-3">
-            <button class="btn btn-warning" onclick="refreshMap()">Check Again</button>
-            <button class="btn btn-secondary" onclick="goBack()">Go Back</button>
-          </div>
-        `;
+    document.getElementById('main-content').innerHTML = `
+      <h5>Here you are:-</h5>
+      <div id="map"></div>
+      <p class="mt-2"><strong>${locationText}</strong></p>
+      <div class="d-flex justify-content-center gap-3 mt-3">
+        <button class="btn btn-warning" onclick="refreshMap()">Check Again</button>
+        <button class="btn btn-secondary" onclick="goBack()">Go Back</button>
+      </div>
+    `;
 
-        const map = L.map('map').setView([lat, lon], 10);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-          attribution: '© OpenStreetMap contributors'
-        }).addTo(map);
-        L.marker([lat, lon]).addTo(map).bindPopup("You are here").openPopup();
+    const map = L.map('map').setView([lat, lon], 10);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap contributors'
+    }).addTo(map);
+    L.marker([lat, lon]).addTo(map).bindPopup("You are here").openPopup();
 
-        setTimeout(() => {
-          map.setView([lat, lon], 15, {
-            animate: true,
-            duration: 1.5
-          });
-        }, 500);
-      }, () => {
-        document.getElementById('main-content').innerHTML = `<div class="text-danger">Location permission denied!</div>`;
+    setTimeout(() => {
+      map.setView([lat, lon], 15, {
+        animate: true,
+        duration: 1.5
       });
+    }, 500);
+  }, () => {
+    document.getElementById('main-content').innerHTML = `<div class="text-danger">Location permission denied!</div>`;
+  });
+}
+
+function refreshMap() {
+  const notification = document.getElementById('refreshNotification');
+  notification.style.display = 'block';
+  setTimeout(() => {
+    notification.style.display = 'none';
+    showMap();
+  }, 2000);
+}
+
+function goBack() {
+  document.getElementById('main-content').innerHTML = originalHTML;
+  // document.getElementById('badgeMark').style.display = 'block'; // ⛔ keep it hidden as per user request
+}
+
+
+function checkConnectionSpeed() {
+  const img = new Image();
+  const startTime = new Date().getTime();
+  const cacheBuster = Math.floor(Math.random() * 10000);
+  img.src = "https://www.google.com/images/phd/px.gif?" + cacheBuster;
+  img.onload = () => {
+    const endTime = new Date().getTime();
+    const duration = (endTime - startTime) / 1000;
+    const speedMbps = (0.01 * 8) / duration;
+
+    const dot = document.getElementById('statusDot');
+    const text = document.getElementById('statusText');
+
+    if (speedMbps > 10) {
+      dot.className = 'status-dot status-strong';
+      text.textContent = 'Connection is Strong';
+    } else if (speedMbps > 3) {
+      dot.className = 'status-dot status-good';
+      text.textContent = 'Connection is Good';
+    } else {
+      dot.className = 'status-dot status-fair';
+      text.textContent = 'Connection is Fair';
     }
+  };
 
-    function refreshMap() {
-      const notification = document.getElementById('refreshNotification');
-      notification.style.display = 'block';
-      setTimeout(() => {
-        notification.style.display = 'none';
-        showMap();
-      }, 2000);
-    }
+  img.onerror = () => {
+    document.getElementById('statusDot').className = 'status-dot status-fair';
+    document.getElementById('statusText').textContent = 'Connection Issue';
+  };
+}
 
-    function goBack() {
-      document.getElementById('main-content').innerHTML = originalHTML;
-      document.getElementById('badgeMark').style.display = 'block';
-    }
-
-    function checkConnectionSpeed() {
-      const img = new Image();
-      const startTime = new Date().getTime();
-      const cacheBuster = Math.floor(Math.random() * 10000);
-      img.src = "https://www.google.com/images/phd/px.gif?" + cacheBuster;
-      img.onload = () => {
-        const endTime = new Date().getTime();
-        const duration = (endTime - startTime) / 1000;
-        const speedMbps = (0.01 * 8) / duration; // 10KB image in Megabits
-
-        const dot = document.getElementById('statusDot');
-        const text = document.getElementById('statusText');
-
-        if (speedMbps > 10) {
-          dot.className = 'status-dot status-strong';
-          text.textContent = 'Connection is Strong';
-        } else if (speedMbps > 3) {
-          dot.className = 'status-dot status-good';
-          text.textContent = 'Connection is Good';
-        } else {
-          dot.className = 'status-dot status-fair';
-          text.textContent = 'Connection is Fair';
-        }
-      };
-
-      img.onerror = () => {
-        document.getElementById('statusDot').className = 'status-dot status-fair';
-        document.getElementById('statusText').textContent = 'Connection Issue';
-      };
-    }
   </script>
 </body>
 </html>
